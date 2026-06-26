@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Produtividade · Análise de Desempenho Operacional</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f7f8fc;--sur:#fff;--brd:#e4e7f0;--navy:#0f3460;--blue:#1a6fbd;--bl:#e8f1fb;
+  --green:#16a34a;--gl:#f0fdf4;--red:#dc2626;--rl:#fef2f2;--yel:#d97706;--yl:#fffbeb;
+  --teal:#0891b2;--txt:#0f3460;--mu:#6b7280}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:Inter,-apple-system,sans-serif;font-size:14px;line-height:1.6}
+
+.cover{background:linear-gradient(135deg,#0f3460 0%,#1a6fbd 100%);color:#fff;padding:72px 80px 60px;position:relative;overflow:hidden;min-height:400px;display:flex;flex-direction:column;justify-content:flex-end}
+.cover::before{content:'';position:absolute;right:-80px;top:-80px;width:500px;height:500px;border-radius:50%;background:rgba(255,255,255,.06)}
+.cover::after{content:'';position:absolute;right:140px;bottom:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.04)}
+.doc-label{font-size:11px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:#90cdf4;margin-bottom:20px}
+.doc-title{font-size:48px;font-weight:900;line-height:1.05;letter-spacing:-.03em;margin-bottom:8px}
+.doc-title span{color:#90cdf4}
+.doc-sub{font-size:17px;color:#bee3f8;margin-bottom:44px}
+.doc-meta{display:flex;gap:48px;border-top:1px solid rgba(255,255,255,.15);padding-top:24px}
+.ml{font-size:11px;color:#90cdf4;text-transform:uppercase;letter-spacing:.1em}
+.mv{font-size:15px;font-weight:600;color:#fff;margin-top:3px}
+
+.nav-bar{background:var(--navy);position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:0;border-bottom:2px solid rgba(255,255,255,.08)}
+.nav-btn{padding:14px 28px;font-size:12px;font-weight:600;color:#9ca3af;border:none;background:transparent;cursor:pointer;letter-spacing:.05em;text-transform:uppercase;border-bottom:3px solid transparent;transition:all .2s}
+.nav-btn:hover{color:#fff}
+.nav-btn.active{color:#fff;border-bottom-color:var(--blue)}
+.nav-divider{width:1px;height:20px;background:rgba(255,255,255,.1);margin:0 4px}
+
+.page-section{display:none}
+.page-section.active{display:block}
+
+.sec-cover{padding:44px 80px 36px;background:linear-gradient(135deg,#0f3460 0%,#1a5276 100%);color:#fff;position:relative;overflow:hidden}
+.sec-cover::after{content:'';position:absolute;right:-40px;top:-40px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.06)}
+.sc-badge{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 14px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#bee3f8;margin-bottom:16px}
+.sc-title{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.sc-sub{font-size:14px;color:#bee3f8}
+
+.page{max-width:1100px;margin:0 auto;padding:48px 40px}
+.sec{margin-bottom:56px}
+.seyeb{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+.stit{font-size:22px;font-weight:700;color:var(--navy);letter-spacing:-.01em}
+.sdesc{font-size:13px;color:var(--mu);margin-top:6px}
+.divider{border:none;border-top:1px solid var(--brd);margin:48px 0}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+
+.card{background:var(--sur);border:1px solid var(--brd);border-radius:12px;padding:20px 22px}
+.card.hl{border-color:var(--blue);border-width:2px}
+.kl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mu)}
+.kv{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:6px 0 4px}
+.ks{font-size:12px;color:var(--mu)}
+.red{color:var(--red)}.blue{color:var(--blue)}.yel{color:var(--yel)}.grn{color:var(--green)}.teal{color:var(--teal)}
+
+.cc{background:var(--sur);border:1px solid var(--brd);border-radius:12px;padding:24px}
+.cct{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.ccs{font-size:12px;color:var(--mu);margin-bottom:16px}
+
+.dept-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.dept-card{background:var(--sur);border:1px solid var(--brd);border-radius:12px;padding:22px 24px}
+.dept-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.dept-dot{width:10px;height:10px;border-radius:50%}
+.dept-sla{font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px}
+.dept-row{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-top:14px;padding-top:14px;border-top:1px solid var(--brd);gap:8px}
+.dept-row>div{display:flex;flex-direction:column;gap:4px}
+.dept-row span{font-weight:600;color:var(--txt);margin-top:2px}
+.bar-bg{background:var(--brd);border-radius:4px;height:6px;margin-top:12px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+
+.tc{background:var(--sur);border:1px solid var(--brd);border-radius:12px;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead tr{background:#f3f4f8}
+th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mu);padding:11px 14px;text-align:left}
+td{padding:9px 14px;font-size:12px;border-top:1px solid var(--brd);vertical-align:middle}
+tr:hover td{background:#f9fafc}
+
+.badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px}
+.br{background:var(--rl);color:var(--red)}.by{background:var(--yl);color:var(--yel)}.bb{background:var(--bl);color:var(--blue)}
+
+.ins{background:var(--bl);border-left:4px solid var(--blue);border-radius:8px;padding:14px 18px;margin-top:16px;font-size:13px;color:#1e3a8a}
+.ins strong{font-weight:700}
+.alb{background:#fff7ed;border:1px solid #fed7aa;border-left:4px solid var(--yel);border-radius:8px;padding:14px 18px;margin-top:16px;font-size:13px}
+.albt{font-weight:700;color:#92400e;margin-bottom:4px}.albb{color:#78350f}
+.alert-crit{background:var(--rl);border:1px solid #fca5a5;border-left:4px solid var(--red);border-radius:8px;padding:14px 18px;margin-top:16px;font-size:13px}
+.alert-crit .albt{color:#991b1b}.alert-crit .albb{color:#7f1d1d}
+
+.prem{background:#f0f7ff;border:1px solid #bfdbfe;border-radius:10px;padding:18px 22px;text-align:left}
+.pt{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);margin-bottom:10px}
+.pi{font-size:12px;color:var(--mu);padding:3px 0 3px 14px;position:relative;line-height:1.6}
+.pi::before{content:"\2022";color:var(--blue);position:absolute;left:0;font-size:14px;line-height:1.4}
+.pi strong{font-weight:700;color:var(--txt)}
+.ps{font-size:12px;color:var(--mu);padding:2px 0 2px 28px;position:relative;line-height:1.6}
+.ps::before{content:"\25e6";color:var(--blue);position:absolute;left:14px}
+
+footer{background:var(--navy);color:#6b7280;text-align:center;padding:24px;font-size:12px}
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="cover">
+  <div class="doc-label">Grupo de Saúde · Área de Dados · Análise Operacional</div>
+  <h1 class="doc-title">Produtividade<br><span>Operacional</span></h1>
+  <p class="doc-sub">Análise consolidada de entregas, SLA e retrabalho por time · Jan–Jun 2026</p>
+  <div class="doc-meta">
+    <div><div class="ml">Edição</div><div class="mv">Jun/26</div></div>
+    <div><div class="ml">Período</div><div class="mv">Jan–Jun 2026</div></div>
+    <div><div class="ml">Dimensão KPI</div><div class="mv">Produtividade</div></div>
+    <div><div class="ml">Bases</div><div class="mv">Sistema de Tarefas · Timesheet · CIT</div></div>
+    <div><div class="ml">Times analisados</div><div class="mv">5 times · 48.900 tarefas</div></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav-bar">
+  <button class="nav-btn active" onclick="showPage('sla')">📋 Entregas &amp; SLA</button>
+  <div class="nav-divider"></div>
+  <button class="nav-btn" onclick="showPage('rt')">🔄 Retrabalho</button>
+</div>
+
+<!-- ═══════════════ PÁGINA 1 — SLA ═══════════════ -->
+<div class="page-section active" id="page-sla">
+<div class="sec-cover">
+  <div class="sc-badge">Produtividade · KPI 01</div>
+  <div class="sc-title">SLA de Entregas</div>
+  <div class="sc-sub">Percentual de tarefas entregues dentro do prazo por time · Jan–Jun 2026 · 48.900 tarefas analisadas</div>
+</div>
+<div class="page">
+
+  <!-- PREMISSAS -->
+  <div class="sec" style="margin-bottom:40px">
+    <div class="seyeb">Premissas da Análise</div>
+    <div class="stit">Critérios e filtros aplicados</div>
+    <div class="prem" style="margin-top:16px">
+      <div class="pt">Filtros aplicados na base de tarefas</div>
+      <div class="pi">Removidos registros sem responsável identificado ou com apenas notificações automáticas do sistema.</div>
+      <div class="pi">Removidas tarefas com status <strong>Cancelada</strong> — não representam obrigações efetivas de entrega.</div>
+      <div class="pi">Removidas unidades com flag <strong>(Inativo)</strong> — contratos encerrados não integram a operação ativa.</div>
+      <div class="pi">Removidos outliers de antecipação extrema: tarefas concluídas com mais de 90 dias de antecedência ao vencimento foram desconsideradas por indicarem erro de lançamento.</div>
+      <div class="pt" style="margin-top:14px">Definições de SLA</div>
+      <div class="pi"><strong>SLA (% no prazo):</strong> tarefas concluídas com data de conclusão igual ou anterior à data de vencimento, dividido pelo total de tarefas do período.</div>
+      <div class="pi"><strong>Vencidas sem conclusão:</strong> prazo expirado e sem registro de entrega — representa risco operacional ativo.</div>
+      <div class="pi"><strong>Atraso médio:</strong> média de dias entre vencimento e conclusão, considerando apenas tarefas entregues com atraso.</div>
+      <div class="pt" style="margin-top:14px">Times analisados</div>
+      <div class="pi"><strong>Assistencial:</strong> Hospital Central e Clínicas · <strong>Diagnóstico:</strong> Diagnóstico · <strong>Urgência:</strong> UPA · <strong>Administrativo:</strong> Administrativo.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 01 GERAL -->
+  <div class="sec">
+    <div class="seyeb">01 · Visão Geral</div>
+    <div class="stit">Como estamos hoje?</div>
+    <div class="sdesc">Consolidado de todos os times · Jan–Jun 2026</div>
+    <div class="g4" style="margin-top:24px">
+      <div class="card hl"><div class="kl">SLA Geral</div><div class="kv blue">84,1%</div><div class="ks">de 48.900 tarefas no prazo</div></div>
+      <div class="card"><div class="kl">Entregues no prazo</div><div class="kv grn">41.117</div><div class="ks">84,1% do total</div></div>
+      <div class="card"><div class="kl">Entregues com atraso</div><div class="kv red">5.865</div><div class="ks">12,0% do total · média 15 dias</div></div>
+      <div class="card"><div class="kl">Vencidas sem conclusão</div><div class="kv red" style="font-size:26px">1.918</div><div class="ks">3,9% do total · prazo expirado, sem registro</div></div>
+    </div>
+    <div class="ins"><strong>Observação:</strong> A cada 10 tarefas, mais de 8 são entregues no prazo. O principal gap está nas 5.865 entregas atrasadas — com média de 15 dias — e nas 1.918 tarefas com prazo vencido sem registro de conclusão, que representam risco operacional ativo.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 02 POR ÁREA -->
+  <div class="sec">
+    <div class="seyeb">02 · Por Área</div>
+    <div class="stit">SLA por área de negócio</div>
+    <div class="sdesc">Assistencial (Hospital Central, Clínicas) · Diagnóstico · Urgência (UPA) · Administrativo</div>
+    <div class="dept-grid" style="margin-top:24px">
+      <div class="dept-card">
+        <div class="dept-name"><div class="dept-dot" style="background:#1a6fbd"></div>Assistencial</div>
+        <div class="dept-sla" style="color:#1a6fbd">82.1%</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:82.1%;background:#1a6fbd"></div></div>
+        <div class="dept-row">
+          <div>Total tarefas<br><span>26.160</span></div>
+          <div>Atrasadas<br><span>3.139 (12,0%)</span></div>
+          <div>Vencidas s/ conclusão<br><span>547 (2,1%)</span></div>
+        </div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-name"><div class="dept-dot" style="background:#0891b2"></div>Diagnóstico</div>
+        <div class="dept-sla" style="color:#0891b2">92.5%</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:92.5%;background:#0891b2"></div></div>
+        <div class="dept-row">
+          <div>Total tarefas<br><span>9.870</span></div>
+          <div>Atrasadas<br><span>1.185 (12,0%)</span></div>
+          <div>Vencidas s/ conclusão<br><span>153 (1,6%)</span></div>
+        </div>
+      </div>
+      <div class="dept-card">
+        <div class="dept-name"><div class="dept-dot" style="background:#dc2626"></div>Urgência · UPA</div>
+        <div class="dept-sla" style="color:#dc2626">63.5%</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:63.5%;background:#dc2626"></div></div>
+        <div class="dept-row">
+          <div>Total tarefas<br><span>5.640</span></div>
+          <div>Atrasadas<br><span>677 (12,0%)</span></div>
+          <div>Vencidas s/ conclusão<br><span>882 (15,6%)</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="alb" style="margin-top:16px"><div class="albt">⚠️ Atenção — UPA com 15,6% de tarefas vencidas sem conclusão</div><div class="albb">A UPA concentra a maior proporção de tarefas com prazo vencido e sem registro (882 de 5.640). O SLA de 63,5% é o mais baixo entre todas as áreas e a tendência é de queda consistente desde janeiro. Tarefas como registro de atendimento e fechamento de escala têm impacto direto em conformidade regulatória.</div></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 03 EVOLUÇÃO -->
+  <div class="sec">
+    <div class="seyeb">03 · Evolução Mensal</div>
+    <div class="stit">Estamos melhorando ou piorando?</div>
+    <div class="sdesc">% de tarefas entregues no prazo por time · Jan–Jun 2026</div>
+    <div class="g2" style="margin-top:24px">
+      <div class="cc"><div class="cct">Assistencial — Hospital Central e Clínicas</div><div class="ccs">Hospital Central em recuperação · Clínicas com melhora consistente</div><div style="height:200px;position:relative"><canvas id="cAssist"></canvas></div></div>
+      <div class="cc"><div class="cct">Diagnóstico e Administrativo</div><div class="ccs">Melhor desempenho geral · Diagnóstico consistentemente acima de 90%</div><div style="height:200px;position:relative"><canvas id="cDiagAdmin"></canvas></div></div>
+    </div>
+    <div style="margin-top:20px">
+      <div class="cc"><div class="cct">UPA — Urgência</div><div class="ccs">Queda consistente de 72,1% em Jan para 55,4% em Jun — ponto crítico da análise</div><div style="height:160px;position:relative"><canvas id="cUPA"></canvas></div></div>
+    </div>
+    <div class="alert-crit" style="margin-top:20px"><div class="albt" style="color:#991b1b">🔴 Alerta Crítico — UPA em deterioração acelerada</div><div class="albb" style="color:#7f1d1d">A UPA caiu de 72,1% em Janeiro para 55,4% em Junho — queda de 16,7 pontos percentuais em 5 meses. Não é uma oscilação pontual, é uma tendência de deterioração. Tarefas de registro de atendimento e fechamento de escala concentram os maiores volumes de atraso.</div></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 04 ATIVIDADES -->
+  <div class="sec">
+    <div class="seyeb">04 · Principais Gargalos</div>
+    <div class="stit">Quais atividades mais atrasam por time?</div>
+    <div class="sdesc">Top atividades com maior volume de atraso · referência: % sobre total de tarefas do time</div>
+    <div class="tc" style="margin-top:24px">
+      <table>
+        <thead><tr><th>Área</th><th>Time</th><th>Atividade</th><th>Qtd atrasadas</th><th>% do time</th><th>Atraso médio</th></tr></thead>
+        <tbody id="tbAtiv"></tbody>
+      </table>
+    </div>
+    <div class="ins"><strong>Comentário:</strong> Registro de Atendimento e Fechamento de Escala concentram os maiores volumes na UPA, ambos com atrasos superiores a 16 dias. Conciliação de Convênio nas Clínicas aparece como segundo maior gargalo proporcional — processos que dependem de retorno de operadoras de saúde tendem a acumular atrasos externos difíceis de controlar internamente.</div>
+  </div>
+
+</div><!-- /page -->
+</div><!-- /page-section SLA -->
+
+<!-- ═══════════════ PÁGINA 2 — RETRABALHO ═══════════════ -->
+<div class="page-section" id="page-rt">
+<div class="sec-cover">
+  <div class="sc-badge">Produtividade · KPI 02</div>
+  <div class="sc-title">Retrabalho por Processo</div>
+  <div class="sc-sub">Volume de correções fora do ciclo normal · custo financeiro · Jan–Jun 2026 · 6 meses</div>
+</div>
+<div class="page">
+
+  <!-- PREMISSAS -->
+  <div class="sec" style="margin-bottom:40px">
+    <div class="seyeb">Premissas da Análise</div>
+    <div class="stit">Critérios e filtros aplicados</div>
+    <div class="prem" style="margin-top:16px">
+      <div class="pt">Definição de retrabalho</div>
+      <div class="pi">Consideradas apenas atividades marcadas explicitamente como retrabalho no sistema de timesheet:</div>
+      <div class="ps"><strong>Retrabalho - Clientes/Pacientes:</strong> erro na entrega que precisou ser refeito.</div>
+      <div class="ps"><strong>Retrabalho - Equipe Anterior:</strong> erro herdado de transição de responsabilidade.</div>
+      <div class="ps"><strong>Retrabalho - Interno:</strong> erro interno do próprio time.</div>
+      <div class="pi">Não inclui retrabalho não registrado. O volume real pode ser maior.</div>
+      <div class="pt" style="margin-top:14px">Custo do retrabalho</div>
+      <div class="pi">Custo calculado via <strong>CIT</strong>. Fórmula: <strong>custo/hora = custo total do colaborador ÷ 190 horas mensais</strong> (jornada padrão).</div>
+      <div class="pi">Colaboradores não localizados no CIT receberam o <strong>custo médio operacional de R$ 38,50/h</strong>.</div>
+      <div class="pt" style="margin-top:14px">Times analisados</div>
+      <div class="pi">Hospital Central, Clínicas, Diagnóstico, UPA e Administrativo.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 01 GERAL RT -->
+  <div class="sec">
+    <div class="seyeb">01 · Visão Geral</div>
+    <div class="stit">Quanto estamos perdendo com retrabalho?</div>
+    <div class="sdesc">Consolidado Jan–Jun 2026 · custo calculado via CIT · jornada 190h/mês</div>
+    <div class="g4" style="margin-top:24px">
+      <div class="card hl"><div class="kl">Custo médio mensal</div><div class="kv red">R$ 6.116</div><div class="ks">por mês em média · jan–jun 2026</div></div>
+      <div class="card"><div class="kl">Média mensal de horas</div><div class="kv yel">158,8h/mês</div><div class="ks">de 7.980h totais/mês · 2,0% das horas</div></div>
+      <div class="card"><div class="kl">Custo total no período</div><div class="kv red">R$ 36.694</div><div class="ks">jan a jun 2026 · 953h de retrabalho</div></div>
+      <div class="card"><div class="kl">Pior mês</div><div class="kv red">Jan/26</div><div class="ks">208h · 2,6% das horas do mês</div></div>
+    </div>
+    <div class="g3" style="margin-top:16px">
+      <div class="card" style="border-left:4px solid var(--red)"><div class="kl">Retrabalho - Clientes</div><div class="kv red" style="font-size:22px">R$ 19.124</div><div class="ks">496h · 52,1% do total</div></div>
+      <div class="card" style="border-left:4px solid var(--blue)"><div class="kl">Retrabalho - Interno</div><div class="kv blue" style="font-size:22px">R$ 9.636</div><div class="ks">250h · 26,3% do total</div></div>
+      <div class="card" style="border-left:4px solid var(--yel)"><div class="kl">Retrabalho - Eq. Anterior</div><div class="kv yel" style="font-size:22px">R$ 7.934</div><div class="ks">206h · 21,6% do total</div></div>
+    </div>
+
+    <div class="ins" style="margin-top:16px"><strong>Observação:</strong> A média de 158,8 horas mensais equivale a aproximadamente <strong>18 dias de trabalho perdidos por mês</strong>. Em custo, são <strong>R$ 6.116/mês</strong> ou <strong>R$ 73.392 anualizados</strong>. Mais de 52% do retrabalho chega ao cliente antes de ser detectado internamente.</div>
+
+    <div class="alb" style="margin-top:16px;border-left-color:var(--red);background:var(--rl);border-color:#fca5a5">
+      <div class="albt" style="color:var(--red)">💡 Quanto precisamos faturar para cobrir o retrabalho?</div>
+      <div class="albb" style="color:#7f1d1d">Com margem de contribuição de 30% (referência média de mercado), cada R$ 1 de retrabalho exige R$ 3,33 em receita. Isso significa <strong>R$ 20.387/mês</strong> ou <strong>R$ 244.640 por ano</strong> apenas para cobrir o retrabalho.</div>
+      <div style="margin-top:12px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px">
+        <div style="background:#fff;border:1px solid #fca5a5;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">Margem 20%</div><div style="font-size:16px;font-weight:800;color:var(--red);margin:4px 0">R$ 30.578</div><div style="font-size:10px;color:#9ca3af">por mês</div></div>
+        <div style="background:#fff;border:1px solid #fca5a5;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">Margem 25%</div><div style="font-size:16px;font-weight:800;color:var(--red);margin:4px 0">R$ 24.464</div><div style="font-size:10px;color:#9ca3af">por mês</div></div>
+        <div style="background:#fff3f3;border:2px solid var(--red);border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:var(--red);text-transform:uppercase">Margem 30% ★</div><div style="font-size:16px;font-weight:800;color:var(--red);margin:4px 0">R$ 20.387</div><div style="font-size:10px;color:#9ca3af">por mês</div></div>
+        <div style="background:#fff;border:1px solid #fca5a5;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">Margem 35%</div><div style="font-size:16px;font-weight:800;color:var(--red);margin:4px 0">R$ 17.474</div><div style="font-size:10px;color:#9ca3af">por mês</div></div>
+        <div style="background:#fff;border:1px solid #fca5a5;border-radius:8px;padding:10px;text-align:center"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase">Margem 40%</div><div style="font-size:16px;font-weight:800;color:var(--red);margin:4px 0">R$ 15.289</div><div style="font-size:10px;color:#9ca3af">por mês</div></div>
+      </div>
+      <div style="font-size:11px;color:#9f1239;margin-top:10px">★ Referência adotada na análise · margem média de mercado</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 02 MENSAL RT -->
+  <div class="sec">
+    <div class="seyeb">02 · Evolução Mensal</div>
+    <div class="stit">Como o retrabalho variou mês a mês?</div>
+    <div class="g2" style="margin-top:24px">
+      <div class="cc"><div class="cct">Horas de retrabalho por mês</div><div class="ccs">Barras = horas · Linha = % sobre total do mês</div><div style="height:200px;position:relative"><canvas id="cRTMes"></canvas></div></div>
+      <div class="cc"><div class="cct">Custo financeiro por mês (R$)</div><div class="ccs">Calculado via CIT · jornada 190h/mês</div><div style="height:200px;position:relative"><canvas id="cRTCusto"></canvas></div></div>
+    </div>
+    <div class="ins"><strong>Comentário:</strong> Janeiro foi o pico crítico (208h — R$ 8.008). Tendência de queda progressiva, com junho encerrando como o melhor mês (113h — R$ 4.351). Queda de 46% entre janeiro e junho — sinal positivo de melhora estrutural.</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 03 POR TIME -->
+  <div class="sec">
+    <div class="seyeb">03 · Por Time</div>
+    <div class="stit">Onde o retrabalho mais acontece?</div>
+    <div class="g4" style="margin-top:24px">
+      <div class="card" style="border-left:4px solid var(--red)"><div class="kl">Clínicas</div><div class="kv red" style="font-size:22px">55,8h/mês</div><div class="ks">R$ 2.149/mês · maior volume</div></div>
+      <div class="card" style="border-left:4px solid var(--red)"><div class="kl">Hospital Central</div><div class="kv red" style="font-size:22px">37,8h/mês</div><div class="ks">R$ 1.454/mês</div></div>
+      <div class="card" style="border-left:4px solid var(--yel)"><div class="kl">UPA</div><div class="kv yel" style="font-size:22px">30,6h/mês</div><div class="ks">R$ 1.176/mês</div></div>
+      <div class="card" style="border-left:4px solid var(--yel)"><div class="kl">Diagnóstico</div><div class="kv yel" style="font-size:22px">18,9h/mês</div><div class="ks">R$ 727/mês</div></div>
+    </div>
+    <div class="g3" style="margin-top:16px">
+      <div class="card" style="border-left:4px solid var(--green)"><div class="kl">Administrativo</div><div class="kv grn" style="font-size:22px">15,8h/mês</div><div class="ks">R$ 609/mês</div></div>
+      <div class="cc g2" style="grid-column:span 2;padding:16px 20px">
+        <div><div class="cct">Evolução mensal por time — % horas retrabalho</div><div class="ccs">Clínicas e Hospital Central · Jan–Jun 2026</div><div style="height:160px;position:relative"><canvas id="cRTTime"></canvas></div></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- 04 POR UNIDADE -->
+  <div class="sec">
+    <div class="seyeb">04 · Por Unidade</div>
+    <div class="stit">Quais unidades geram mais retrabalho?</div>
+    <div class="sdesc">Unidades com 10h+ no período · evolução mensal · Jan–Jun 2026</div>
+
+    <div class="cc" style="margin-top:24px">
+      <div class="cct">Evolução mensal — selecione a unidade</div>
+      <div class="ccs">Barras = custo R$ · Linha = horas de retrabalho</div>
+      <div style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:6px" id="empBtns"></div>
+      <div id="empTit" style="font-size:12px;color:var(--mu);margin-bottom:12px;font-weight:500"></div>
+      <div style="height:220px;position:relative"><canvas id="cEmpMes"></canvas></div>
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="cct" style="margin-bottom:10px">Tabela consolidada — unidades incluídas na análise</div>
+      <div class="tc">
+        <table>
+          <thead><tr><th>Unidade</th><th>Time</th><th>Tipo principal</th><th>Horas RT</th><th>% horas</th><th>Custo total</th><th>Jun/26</th></tr></thead>
+          <tbody id="tbUnid"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<footer>
+  Grupo de Saúde · Área de Dados · Produtividade Operacional · Jun/26 · Dados fictícios para fins de portfólio
+</footer>
+
+<script>
+const MES=['Jan','Fev','Mar','Abr','Mai','Jun'];
+
+function addLbls(pct){
+  return [{id:'lbl',afterDatasetsDraw(chart){
+    const {ctx}=chart;
+    chart.data.datasets.forEach((ds,i)=>{
+      if(ds.borderDash) return;
+      chart.getDatasetMeta(i).data.forEach((pt,j)=>{
+        const v=ds.data[j];
+        if(!v&&v!==0) return;
+        ctx.save();ctx.font='bold 10px Inter,sans-serif';
+        ctx.fillStyle=ds.borderColor||'#333';
+        ctx.textAlign='center';ctx.textBaseline='bottom';
+        ctx.fillText(v+(pct?'%':'h'),pt.x,pt.y-5);ctx.restore();
+      });
+    });
+  }}];
+}
+
+function lDs(label,data,color){
+  return {label,data,borderColor:color,backgroundColor:color+'15',borderWidth:2.5,
+    pointRadius:4,pointBackgroundColor:color,pointBorderColor:'#fff',pointBorderWidth:2,tension:0.3};
+}
+function rDs(){return {label:'Meta 90%',data:Array(6).fill(90),borderColor:'#d1d5db',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false};}
+
+function mkLine(id,dsets,maxY,pct){
+  new Chart(document.getElementById(id),{type:'line',data:{labels:MES,datasets:dsets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10,padding:10}},
+        tooltip:{backgroundColor:'#0f3460',bodyColor:'#fff',callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y}${pct?'%':'h'}`}}},
+      scales:{x:{grid:{color:'#f3f4f8'},ticks:{color:'#9ca3af',font:{size:10}}},
+        y:{min:0,max:maxY,grid:{color:'#f3f4f8'},ticks:{color:'#9ca3af',font:{size:10},callback:v=>v+(pct?'%':'h')}}}},
+    plugins:addLbls(pct)});
+}
+
+// SLA charts
+mkLine('cAssist',[
+  lDs('Hospital Central',[88.2,85.4,87.1,89.3,91.2,92.4],'#1a6fbd'),
+  lDs('Clínicas',[79.3,76.8,78.4,80.1,82.3,85.6],'#0891b2'),
+  rDs()
+],105,true);
+
+mkLine('cDiagAdmin',[
+  lDs('Diagnóstico',[91.4,90.2,92.1,91.8,93.4,94.1],'#16a34a'),
+  lDs('Administrativo',[83.6,82.1,84.3,85.7,86.2,87.8],'#7c3aed'),
+  rDs()
+],105,true);
+
+mkLine('cUPA',[
+  lDs('UPA',[72.1,68.4,65.3,61.2,58.7,55.4],'#dc2626'),
+  rDs()
+],90,true);
+
+// Atividades table
+const ativs=[
+  {area:'Urgência',time:'UPA',ativ:'Registro de Atendimento',qtd:312,total:5640,pct:5.5,media:16},
+  {area:'Urgência',time:'UPA',ativ:'Fechamento de Escala',qtd:189,total:5640,pct:3.4,media:22},
+  {area:'Assistencial',time:'Clínicas',ativ:'Conciliação de Convênio',qtd:224,total:11340,pct:2.0,media:21},
+  {area:'Assistencial',time:'Clínicas',ativ:'Emissão de Guia ANS',qtd:156,total:11340,pct:1.4,media:15},
+  {area:'Assistencial',time:'Hospital Central',ativ:'Faturamento TISS',qtd:187,total:14820,pct:1.3,media:12},
+  {area:'Assistencial',time:'Hospital Central',ativ:'Autorização de Procedimento',qtd:134,total:14820,pct:0.9,media:18},
+  {area:'Administrativo',time:'Administrativo',ativ:'Folha de Pagamento',qtd:143,total:7230,pct:2.0,media:19},
+  {area:'Administrativo',time:'Administrativo',ativ:'Admissão / Rescisão',qtd:98,total:7230,pct:1.4,media:14},
+  {area:'Diagnóstico',time:'Diagnóstico',ativ:'Laudo Pendente',qtd:98,total:9870,pct:1.0,media:9},
+  {area:'Diagnóstico',time:'Diagnóstico',ativ:'Protocolo ANVISA',qtd:76,total:9870,pct:0.8,media:14},
+];
+const areaC={'Urgência':'br','Assistencial':'bb','Diagnóstico':'badge','Administrativo':'by'};
+const areaColor={'Urgência':'var(--red)','Assistencial':'var(--blue)','Diagnóstico':'var(--teal)','Administrativo':'var(--yel)'};
+const tb=document.getElementById('tbAtiv');
+ativs.forEach(r=>{
+  const mC=r.media>18?'color:var(--red);font-weight:700':r.media>12?'color:var(--yel);font-weight:600':'';
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><span class="badge" style="background:${areaColor[r.area]}20;color:${areaColor[r.area]}">${r.area}</span></td>
+    <td style="font-weight:600">${r.time}</td><td>${r.ativ}</td>
+    <td>${r.qtd} <span style="color:#9ca3af;font-size:10px">de ${r.total.toLocaleString('pt-BR')}</span></td>
+    <td>${r.pct}%</td><td style="${mC}">${r.media} dias</td>`;
+  tb.appendChild(tr);
+});
+
+// RT mensal
+new Chart(document.getElementById('cRTMes'),{
+  data:{labels:MES,datasets:[
+    {type:'bar',label:'Horas retrabalho',data:[208,172,183,194,183,113],backgroundColor:'#dc262640',borderColor:'#dc2626',borderWidth:2,yAxisID:'y'},
+    {type:'line',label:'% total horas',data:[2.6,2.2,2.3,2.4,2.3,1.4],borderColor:'#1a6fbd',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#1a6fbd',pointBorderColor:'#fff',pointBorderWidth:2,tension:0.3,yAxisID:'y2'}
+  ]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:12}},tooltip:{backgroundColor:'#0f3460',bodyColor:'#fff'}},
+    scales:{x:{grid:{color:'#f3f4f8'},ticks:{color:'#9ca3af',font:{size:11}}},
+      y:{position:'left',grid:{color:'#f3f4f8'},ticks:{color:'#9ca3af',font:{size:11},callback:v=>v+'h'}},
+      y2:{position:'right',grid:{drawOnChartArea:false},min:0,max:4,ticks:{color:'#1a6fbd',font:{size:11},callback:v=>v+'%'}}}}
+});
+
+new Chart(document.getElementById('cRTCusto'),{type:'bar',
+  data:{labels:MES,datasets:[{label:'Custo (R$)',data:[8008,6622,7046,7469,7046,4351],
+    backgroundColor:['#dc262660','#16a34a40','#d9770640','#d9770640','#16a34a40','#16a34a40'],
+    borderColor:['#dc2626','#16a34a','#d97706','#d97706','#16a34a','#16a34a'],borderWidth:2}]},
+  options:{responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{backgroundColor:'#0f3460',bodyColor:'#fff',callbacks:{label:c=>' R$ '+c.parsed.y.toLocaleString('pt-BR')}}},
+    scales:{x:{grid:{color:'#f3f4f8'},ticks:{color:'#9ca3af',font:{size:11}}},
+      y:{grid:{color:'#f3f4f8'},ticks:{color:'#9ca3af',font:{size:11},callback:v=>'R$'+v.toLocaleString('pt-BR')}}}}
+});
+
+mkLine('cRTTime',[
+  lDs('Clínicas',[3.8,3.2,3.5,3.7,3.3,2.4],'#dc2626'),
+  lDs('Hospital Central',[2.8,1.9,2.3,2.5,2.2,1.7],'#1a6fbd'),
+  {label:'Ref. 2%',data:Array(6).fill(2),borderColor:'#d1d5db',borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false}
+],5,true);
+
+// Unidades interativo
+const UNIDS=[
+  {n:'Unidade Norte — Hospital',t:'Hospital Central',tipo:'Clientes',h:[32.1,0,18.4,22.1,15.3,8.2],c:[1236,0,708,851,589,316]},
+  {n:'Clínica Bem Estar',t:'Clínicas',tipo:'Interno',h:[18.4,22.1,14.2,19.8,11.4,7.3],c:[708,851,547,762,439,281]},
+  {n:'Centro de Imagem Sul',t:'Diagnóstico',tipo:'Eq. Anterior',h:[0,14.3,0,18.2,0,9.1],c:[0,551,0,701,0,350]},
+  {n:'UPA Zona Leste',t:'UPA',tipo:'Clientes',h:[12.4,8.7,15.3,21.4,13.2,6.4],c:[477,335,589,824,508,246]},
+  {n:'Laboratório Central',t:'Diagnóstico',tipo:'Interno',h:[8.2,11.4,9.8,7.3,12.1,4.8],c:[316,439,377,281,466,185]},
+  {n:'RH Unidade Sul',t:'Administrativo',tipo:'Clientes',h:[6.3,8.1,7.4,9.2,5.8,3.9],c:[243,312,285,354,223,150]},
+  {n:'Faturamento Clínicas Norte',t:'Clínicas',tipo:'Eq. Anterior',h:[9.1,0,14.2,0,8.4,5.2],c:[350,0,547,0,323,200]},
+  {n:'Gestão de Escalas UPA',t:'UPA',tipo:'Interno',h:[7.2,5.4,6.8,8.1,4.9,3.8],c:[277,208,262,312,189,146]},
+  {n:'Contas a Receber',t:'Administrativo',tipo:'Eq. Anterior',h:[4.8,6.2,5.1,7.3,4.2,2.9],c:[185,239,196,281,162,112]},
+];
+const COLS=['#dc2626','#1a6fbd','#0891b2','#d97706','#16a34a','#7c3aed','#f97316','#e879f9','#2dd4bf'];
+const tipoC={'Clientes':'br','Eq. Anterior':'by','Interno':'bb'};
+let empChart=null;
+
+function buildChart(idx){
+  if(empChart) empChart.destroy();
+  const d=UNIDS[idx]; const col=COLS[idx%COLS.length];
+  document.getElementById('empTit').textContent=d.n+' · Time: '+d.t+' · Tipo: '+d.tipo+' · Total: '+d.h.reduce((a,b)=>a+b,0).toFixed(1)+'h';
+  empChart=new Chart(document.getElementById('cEmpMes'),{
+    data:{labels:MES,datasets:[
+      {type:'bar',label:'Custo retrabalho (R$)',data:d.c,backgroundColor:col+'50',borderColor:col,borderWidth:2,yAxisID:'yC'},
+      {type:'line',label:'Horas retrabalho',data:d.h,borderColor:'#0f3460',backgroundColor:'#0f346010',borderWidth:2.5,pointRadius:5,pointBackgroundColor:'#0f3460',pointBorderColor:'#fff',pointBorderWidth:2,tension:0.3,yAxisID:'yH'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{size:11},boxWidth:12,padding:12}},
+        tooltip:{backgroundColor:'#0f3460',bodyColor:'#fff',callbacks:{label:c=>c.datasetIndex===0?' R$ '+c.parsed.y.toLocaleString('pt-BR'):' '+c.parsed.y+'h'}}},
+      scales:{x:{grid:{color:'#f3f4f8'},ticks:{color:'#9ca3af',font:{size:11}}},
+        yC:{position:'left',grid:{color:'#f3f4f8'},ticks:{color:'#9ca3af',font:{size:11},callback:v=>'R$'+v.toLocaleString('pt-BR')}},
+        yH:{position:'right',grid:{drawOnChartArea:false},min:0,ticks:{color:'#0f3460',font:{size:11},callback:v=>v+'h'}}}}
+  });
+}
+
+const btnDiv=document.getElementById('empBtns');
+UNIDS.forEach((d,i)=>{
+  const col=COLS[i%COLS.length];
+  const btn=document.createElement('button');
+  btn.textContent=d.n.length>22?d.n.substring(0,22)+'…':d.n;
+  btn.title=d.n+' · '+d.t;
+  btn.style.cssText='padding:4px 12px;border-radius:20px;border:1.5px solid '+col+';background:'+(i===0?col:'transparent')+';color:'+(i===0?'#fff':col)+';font-size:11px;font-weight:600;cursor:pointer;transition:all .15s';
+  btn.onclick=()=>{
+    document.querySelectorAll('#empBtns button').forEach((b,bi)=>{const c=COLS[bi%COLS.length];b.style.background=bi===i?c:'transparent';b.style.color=bi===i?'#fff':c;});
+    buildChart(i);
+  };
+  btnDiv.appendChild(btn);
+});
+buildChart(0);
+
+const tbU=document.getElementById('tbUnid');
+UNIDS.forEach(r=>{
+  const ht=r.h.reduce((a,b)=>a+b,0).toFixed(1);
+  const ct=r.c.reduce((a,b)=>a+b,0);
+  const hjun=r.h[5]; const cjun=r.c[5];
+  const junH=hjun>=5?'<span style="color:var(--red);font-weight:700">'+hjun+'h ⚠️</span>':hjun>0?'<span style="color:var(--yel)">'+hjun+'h</span>':'<span style="color:#9ca3af">—</span>';
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td style="font-weight:600">'+r.n+'</td>'+
+    '<td><span style="font-size:11px;background:#f3f4f8;padding:2px 6px;border-radius:4px">'+r.t+'</span></td>'+
+    '<td><span class="badge '+(tipoC[r.tipo]||'bb')+'">'+r.tipo+'</span></td>'+
+    '<td style="font-weight:600">'+ht+'h</td>'+
+    '<td style="font-weight:700">—</td>'+
+    '<td style="font-weight:600">R$ '+ct.toLocaleString('pt-BR')+'</td>'+
+    '<td>'+junH+'</td>';
+  tbU.appendChild(tr);
+});
+
+function showPage(id){
+  document.querySelectorAll('.page-section').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
